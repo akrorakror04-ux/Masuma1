@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SweetFinder Dushanbe | Найди свои сладости</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+   <link rel="stylesheet" href="style.css">
+</head>
+<b>
+
+<header class="header">
+    <div class="header-content">
+        <div class="logo">
+            <i class="fas fa-candy-cane"></i>
+            <h1>SweetFinder<br><span style="font-size: 0.8rem;">Душанбе</span></h1>
+        </div>
+        <div class="contact-info">
+            <div class="contact-item">
+                <i class="fab fa-telegram"></i>
+                <a href="https://t.me/sweetfinder_dushanbe" target="_blank">@sweetfinder_dushanbe</a>
+            </div>
+            <div class="contact-item">
+                <i class="fab fa-instagram"></i>
+                <a href="https://instagram.com/sweetfinder_dushanbe" target="_blank">@sweetfinder_dushanbe</a>
+            </div>
+            <div class="contact-item">
+                <i class="fas fa-phone-alt"></i>
+                <a href="tel:+992901234567">+992 90 123 45 67</a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<section class="hero">
+    <h2>🍰 Найдите идеальные сладости в Душанбе</h2>
+    <p>Лучшие кондитерские, десертные и сладкие магазины города</p>
+</section>
+
+<section class="search-section">
+    <div class="form-group">
+        <label><i class="fas fa-cake-candles"></i> Какую сладость вы хотите?</label>
+        <select id="sweetType">
+            <option value="all">Все сладости</option>
+            <option value="cake">🎂 Торты</option>
+            <option value="pastry">🥐 Пирожные</option>
+            <option value="chocolate">🍫 Шоколад и конфеты</option>
+            <option value="icecream">🍦 Мороженое</option>
+            <option value="baklava">🍯 Пахлава и восточные сладости</option>
+            <option value="macaron">🍪 Макарунс и печенье</option>
+            <option value="desert">🍮 Десерты</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label> Ваш бюджет (сомони)</label>
+        <div class="price-input">
+            <span>smn:</span>
+            <input type="number" id="maxPrice" placeholder="Введите сумму до..." value="100">
+        </div>
+    </div>
+    
+    <button class="search-btn" onclick="findSweets()">
+        <i class="fas fa-search"></i> Найти сладости
+    </button>
+</section>
+
+<section class="results-section">
+    <h2 class="results-title">🍬 Найденные сладости</h2>
+    <div id="resultsGrid" class="sweets-grid">
+        <!-- Результаты будут здесь -->
+    </div>
+</section>
+
+<footer class="footer">
+    <p>🍰 SweetFinder Dushanbe — Найдите свои любимые сладости в столице Таджикистана</p>
+    <p style="margin-top: 1rem; font-size: 0.8rem;">© 2026 Все права защищены</p>
+</footer>
+
+<!-- Модальное окно для контактов -->
+<div id="contactModal" class="modal">
+    <div class="modal-content">
+        <i class="fas fa-store" style="font-size: 3rem; color: #c47a3e;"></i>
+        <h3>Перейти к заказу?</h3>
+        <p>Вы будете перенаправлены на сайт магазина для оформления заказа</p>
+        <p><strong id="selectedShop"></strong></p>
+        <button class="close-modal" onclick="closeModal()">Закрыть</button>
+    </div>
+</div>
+
+<script src="vssco.js/database.js"></script>.
+<script>
+    let currentRedirectUrl = '';
+
+    function findSweets() {
+        const maxPrice = parseFloat(document.getElementById('maxPrice').value);
+        const sweetType = document.getElementById('sweetType').value;
+        
+        let filtered = sweetsDatabase.filter(sweet => sweet.price <= maxPrice);
+        
+        if (sweetType !== 'all') {
+            filtered = filtered.filter(sweet => sweet.type === sweetType);
+        }
+        
+        displayResults(filtered);
+    }
+
+    function displayResults(sweets) {
+        const grid = document.getElementById('resultsGrid');
+        
+        if (sweets.length === 0) {
+            grid.innerHTML = `
+                <div style="grid-column: 1/-1; text-align: center; padding: 3rem;">
+                    <i class="fas fa-sad-tear" style="font-size: 3rem; color: #c4a27a;"></i>
+                    <p style="margin-top: 1rem; color: #7a5a42;">К сожалению, сладостей в вашем бюджете не найдено 😔</p>
+                    <p style="color: #c47a3e;">Попробуйте увеличить сумму или выбрать другой тип</p>
+                </div>
+            `;
+            return;
+        }
+        
+        grid.innerHTML = sweets.map(sweet => `
+            <div class="sweet-card" onclick="redirectToShop('${sweet.shopUrl}', '${sweet.shop}')">
+                <div class="card-image" style="background-image: url('${sweet.image}')">
+                    <div class="price-badge">smn: ${sweet.price}</div>
+                </div>
+                <div class="card-content">
+                    <h3>${sweet.name}</h3>
+                    <div class="shop-name">
+                        <i class="fas fa-store"></i> ${sweet.shop}
+                    </div>
+                    <div class="description">
+                        <i class="fas fa-info-circle"></i> ${sweet.description}
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function redirectToShop(url, shopName) {
+        currentRedirectUrl = url;
+        document.getElementById('selectedShop').innerText = shopName;
+        document.getElementById('contactModal').style.display = 'flex';
+        
+        // Автоматический переход через 3 секунды или по клику
+        setTimeout(() => {
+            closeModalAndRedirect();
+        }, 3000);
+    }
+
+    function closeModalAndRedirect() {
+        if (currentRedirectUrl) {
+            window.open(currentRedirectUrl, '_blank');
+            closeModal();
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('contactModal').style.display = 'none';
+        currentRedirectUrl = '';
+    }
+
+    // Показать все сладости при загрузке
+    window.onload = () => {
+        findSweets();
+    };
+    window.onload=findSweets;
+</script>
